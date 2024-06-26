@@ -15,6 +15,4 @@ public class JsonConverterImpl implements JsonConverter {
             throw new RuntimeException(e);
         }
     }
-
-
 }

@@ -2,18 +2,22 @@ package com.bock.literalura.models;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "authors")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Author {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "author_id")
     Long id;
+    @Column(name = "name")
     String name;
+    @Column(name = "birth_year")
     @JsonAlias("birth_year")
     Integer birthYear;
+    @Column(name = "death_year")
     @JsonAlias("death_year")
     Integer deathYear;
 

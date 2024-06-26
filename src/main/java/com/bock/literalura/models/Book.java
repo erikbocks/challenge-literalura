@@ -1,29 +1,33 @@
 package com.bock.literalura.models;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
-import java.util.List;
-
+@Entity
+@Table(name = "books")
 public class Book {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "book_id")
     Long id;
+    @Column(name = "title")
     String title;
+    @Column(name = "language")
+    @Enumerated(EnumType.STRING)
+    Language language;
+    @Column(name = "downloads")
+    Integer downloadCount;
+    @ManyToOne
+    @JoinColumn(name = "author_id")
     Author author;
-    List<String> languages;
-    Integer downloads;
 
     public Book() {
     }
 
-    public Book(String title, Author author, List<String> languages, Integer downloads) {
+    public Book(String title, Language language, Integer downloads, Author author) {
         this.title = title;
+        this.language = language;
+        this.downloadCount = downloads;
         this.author = author;
-        this.languages = languages;
-        this.downloads = downloads;
     }
 
     public Long getId() {
@@ -46,31 +50,31 @@ public class Book {
         return author;
     }
 
-    public List<String> getLanguage() {
-        return languages;
+    public Language getLanguage() {
+        return language;
     }
 
-    public void setLanguage(List<String> languages) {
-        this.languages = languages;
+    public void setLanguage(Language language) {
+        this.language = language;
     }
 
-    public Integer getDownloads() {
-        return downloads;
+    public Integer getDownloadCount() {
+        return downloadCount;
     }
 
-    public void setDownloads(Integer downloads) {
-        this.downloads = downloads;
+    public void setDownloadCount(Integer downloads) {
+        this.downloadCount = downloads;
     }
 
     @Override
     public String toString() {
         return String.format("""
-                ------------- LIVRO ------------
+                \n------------- LIVRO ------------
                  Titulo: %s
                  Autor: %s
                  Idioma: %s
                  Número de Downloads: %d
                 --------------------------------
-                """, title, author.getName(), languages.toString(), downloads);
+                """, title, author.getName(), language, downloadCount);
     }
 }
