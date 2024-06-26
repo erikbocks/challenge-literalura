@@ -4,6 +4,7 @@ import com.bock.literalura.models.Author;
 import com.bock.literalura.repository.AuthorRepository;
 import com.bock.literalura.service.AuthorService;
 
+import java.util.List;
 import java.util.Optional;
 
 public class AuthorServiceImpl implements AuthorService {
@@ -22,6 +23,11 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public Author saveAuthor(Author author) {
         return repository.saveAndFlush(author);
+    }
+
+    @Override
+    public List<Author> getAll() {
+        return repository.findAll();
     }
 }
 

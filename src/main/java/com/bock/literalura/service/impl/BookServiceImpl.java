@@ -1,5 +1,6 @@
 package com.bock.literalura.service.impl;
 
+import com.bock.literalura.models.Author;
 import com.bock.literalura.models.Book;
 import com.bock.literalura.repository.BookRepository;
 import com.bock.literalura.service.BookService;
@@ -29,5 +30,10 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<Book> getAllBooks() {
         return repository.findAll();
+    }
+
+    @Override
+    public List<String> getBooksTitlesByAuthor(Author author) {
+        return repository.findBookTitlesByAuthor(author);
     }
 }

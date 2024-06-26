@@ -40,6 +40,7 @@ public class Principal {
                     \s
                     1 - Buscar livro por titulo.
                     2 - Listar livros cadastrados.
+                    3 - Listar autores registrados.
                     \s
                     0 - Sair
                     =====================================
@@ -53,6 +54,9 @@ public class Principal {
                     break;
                 case 2:
                     listBooks();
+                    break;
+                case 3:
+                    listAuthors();
                     break;
                 default:
                     System.out.println("\nOpção inválida.\n");
@@ -118,5 +122,21 @@ public class Principal {
         }
 
         books.forEach(System.out::println);
+    }
+
+    private void listAuthors() {
+        List<Author> authors = authorService.getAll();
+
+        authors.forEach(a -> {
+            List<String> authorBooks = bookService.getBooksTitlesByAuthor(a);
+            System.out.printf("""
+                     \s
+                     Autor: %s
+                     Ano de Nascimento: %d
+                     Ano de Falecimento: %d
+                     Livros: %s
+                     \s
+                    """, a.getName(), a.getBirthYear(), a.getDeathYear(), authorBooks);
+        });
     }
 }
