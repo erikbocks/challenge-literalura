@@ -29,5 +29,10 @@ public class AuthorServiceImpl implements AuthorService {
     public List<Author> getAll() {
         return repository.findAll();
     }
+
+    @Override
+    public List<Author> findAuthorsLivingInYear(int year) {
+        return repository.findLivingAuthors(year);
+    }
 }
 

@@ -11,4 +11,6 @@ public interface AuthorService {
     Author saveAuthor(Author author);
 
     List<Author> getAll();
+
+    List<Author> findAuthorsLivingInYear(int year);
 }

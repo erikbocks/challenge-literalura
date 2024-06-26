@@ -41,6 +41,7 @@ public class Principal {
                     1 - Buscar livro por titulo.
                     2 - Listar livros cadastrados.
                     3 - Listar autores registrados.
+                    4 - Listar autores vivos em determinado ano.
                     \s
                     0 - Sair
                     =====================================
@@ -57,6 +58,9 @@ public class Principal {
                     break;
                 case 3:
                     listAuthors();
+                    break;
+                case 4:
+                    listAuthorsAliveInYear();
                     break;
                 default:
                     System.out.println("\nOpção inválida.\n");
@@ -127,8 +131,37 @@ public class Principal {
     private void listAuthors() {
         List<Author> authors = authorService.getAll();
 
+        if (authors.isEmpty()) {
+            System.out.println("Nenhum autor cadastrado.");
+            return;
+        }
+
         authors.forEach(a -> {
-            List<String> authorBooks = bookService.getBooksTitlesByAuthor(a);
+            List<String> authorBooks = bookService.getBooksTitlesByAuthor(a.getId());
+            System.out.printf("""
+                     \s
+                     Autor: %s
+                     Ano de Nascimento: %d
+                     Ano de Falecimento: %d
+                     Livros: %s
+                     \s
+                    """, a.getName(), a.getBirthYear(), a.getDeathYear(), authorBooks);
+        });
+    }
+
+    private void listAuthorsAliveInYear() {
+        System.out.println("Qual o ano que deseja pesquisar? Ex: 1999");
+        int year = reader.nextInt();
+
+        List<Author> authors = authorService.findAuthorsLivingInYear(year);
+
+        if (authors.isEmpty()) {
+            System.out.println("Nenhum autor encontrado para essa data.");
+            return;
+        }
+
+        authors.forEach(a -> {
+            List<String> authorBooks = bookService.getBooksTitlesByAuthor(a.getId());
             System.out.printf("""
                      \s
                      Autor: %s

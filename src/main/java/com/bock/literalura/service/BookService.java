@@ -1,6 +1,5 @@
 package com.bock.literalura.service;
 
-import com.bock.literalura.models.Author;
 import com.bock.literalura.models.Book;
 
 import java.util.List;
@@ -13,5 +12,5 @@ public interface BookService {
 
     List<Book> getAllBooks();
 
-    List<String> getBooksTitlesByAuthor(Author author);
+    List<String> getBooksTitlesByAuthor(Long authorId);
 }
