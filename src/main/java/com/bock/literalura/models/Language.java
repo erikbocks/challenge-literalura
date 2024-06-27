@@ -6,10 +6,9 @@ public enum Language {
     FRENCH("fr"),
     PORTUGUESE("pt"),
     ITALIAN("it"),
-    FINNISH("fi"),
     GERMAN("de");
 
-    private String languageCode;
+    private final String languageCode;
 
     Language(String languageCode) {
         this.languageCode = languageCode;

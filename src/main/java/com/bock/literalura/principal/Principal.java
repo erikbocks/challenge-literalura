@@ -3,7 +3,7 @@ package com.bock.literalura.principal;
 import com.bock.literalura.models.Author;
 import com.bock.literalura.models.Book;
 import com.bock.literalura.models.Language;
-import com.bock.literalura.models.dto.LivroDto;
+import com.bock.literalura.models.dto.BookDTO;
 import com.bock.literalura.repository.AuthorRepository;
 import com.bock.literalura.repository.BookRepository;
 import com.bock.literalura.service.ApiRequester;
@@ -13,10 +13,9 @@ import com.bock.literalura.service.impl.AuthorServiceImpl;
 import com.bock.literalura.service.impl.BookServiceImpl;
 import com.bock.literalura.service.impl.JsonConverterImpl;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
 
 public class Principal {
     private final Scanner reader = new Scanner(System.in);
@@ -42,12 +41,19 @@ public class Principal {
                     2 - Listar livros cadastrados.
                     3 - Listar autores registrados.
                     4 - Listar autores vivos em determinado ano.
+                    5 - Listar livros por idioma.
+                    6 - Listar top 10 livros mais baixados.
                     \s
                     0 - Sair
                     =====================================
                     Sua opção:""");
 
-            option = reader.nextInt();
+            try {
+                option = reader.nextInt();
+            } catch (InputMismatchException ex) {
+                option = 0;
+                System.out.println("Ocorreu um erro ao receber os dados.");
+            }
 
             switch (option) {
                 case 1:
@@ -62,6 +68,12 @@ public class Principal {
                 case 4:
                     listAuthorsAliveInYear();
                     break;
+                case 5:
+                    listBooksByLanguage();
+                    break;
+                case 6:
+                    listBookTop10();
+                    break;
                 default:
                     System.out.println("\nOpção inválida.\n");
             }
@@ -73,17 +85,7 @@ public class Principal {
         reader.nextLine();
         String bookName = reader.nextLine();
 
-        Optional<Book> possibleBook = bookService.findBookByTitle(bookName);
-
-        if (possibleBook.isPresent()) {
-            System.out.println("Foi encontrado um livro no banco de dados que continha esse nome.");
-
-            Book book = possibleBook.get();
-            System.out.println(book);
-        } else {
-            searchBookInGutendex(bookName);
-        }
-
+        searchBookInGutendex(bookName);
     }
 
     private void searchBookInGutendex(String bookName) {
@@ -97,8 +99,31 @@ public class Principal {
             return;
         }
 
-        LivroDto bookDto = converter.getData(bookNode.toString(), LivroDto.class);
-        Author author = converter.getData(bookDto.authors().get(0).toString(), Author.class);
+        BookDTO bookDTO = converter.getData(bookNode.toString(), BookDTO.class);
+
+        Optional<Book> dbBook = bookService.findBookByTitlePart(bookDTO.title());
+
+        if (dbBook.isPresent()) {
+            Book book = dbBook.get();
+            if (book.getTitle().equalsIgnoreCase(bookDTO.title())) {
+                System.out.println(book);
+            } else {
+                saveBook(bookDTO);
+            }
+        } else {
+            saveBook(bookDTO);
+        }
+    }
+
+    private void saveBook(BookDTO bookDTO) {
+        ArrayNode authorNode = bookDTO.authors();
+
+        if (authorNode.isEmpty()) {
+            System.out.println("Não foi possível buscar as informações necessários sobre o autor.\nCancelando busca...");
+            return;
+        }
+
+        Author author = converter.getData(bookDTO.authors().get(0).toString(), Author.class);
 
         Optional<Author> dbAuthor = authorService.findAuthorByName(author.getName());
 
@@ -108,10 +133,10 @@ public class Principal {
             author = dbAuthor.get();
         }
 
-        String language = bookDto.languages().get(0).toString();
+        String language = bookDTO.languages().get(0).toString();
         Language bookLanguage = Language.fromString(language.replace("\"", ""));
 
-        Book book = new Book(bookDto.title(), bookLanguage, bookDto.downloads(), author);
+        Book book = new Book(bookDTO.title(), bookLanguage, bookDTO.downloads(), author);
 
         bookService.saveBook(book);
         System.out.println(book);
@@ -125,6 +150,7 @@ public class Principal {
             return;
         }
 
+        System.out.printf("Total de %d livros cadastrados.", books.size());
         books.forEach(System.out::println);
     }
 
@@ -136,6 +162,7 @@ public class Principal {
             return;
         }
 
+        System.out.printf("Total de %d autores cadastrados.\n", authors.size());
         authors.forEach(a -> {
             List<String> authorBooks = bookService.getBooksTitlesByAuthor(a.getId());
             System.out.printf("""
@@ -150,26 +177,67 @@ public class Principal {
     }
 
     private void listAuthorsAliveInYear() {
-        System.out.println("Qual o ano que deseja pesquisar? Ex: 1999");
-        int year = reader.nextInt();
+        try {
+            System.out.println("Qual o ano que deseja pesquisar? Ex: 1999");
+            int year = reader.nextInt();
 
-        List<Author> authors = authorService.findAuthorsLivingInYear(year);
+            List<Author> authors = authorService.findAuthorsLivingInYear(year);
 
-        if (authors.isEmpty()) {
-            System.out.println("Nenhum autor encontrado para essa data.");
-            return;
+            if (authors.isEmpty()) {
+                System.out.println("Nenhum autor encontrado para essa data.");
+                return;
+            }
+
+            authors.forEach(a -> {
+                List<String> authorBooks = bookService.getBooksTitlesByAuthor(a.getId());
+                System.out.printf("""
+                         \s
+                         Autor: %s
+                         Ano de Nascimento: %d
+                         Ano de Falecimento: %d
+                         Livros: %s
+                         \s
+                        """, a.getName(), a.getBirthYear(), a.getDeathYear(), authorBooks);
+            });
+        } catch (InputMismatchException ex) {
+            System.out.println("Ocorreu um erro ao receber os dados.");
         }
+    }
 
-        authors.forEach(a -> {
-            List<String> authorBooks = bookService.getBooksTitlesByAuthor(a.getId());
-            System.out.printf("""
-                     \s
-                     Autor: %s
-                     Ano de Nascimento: %d
-                     Ano de Falecimento: %d
-                     Livros: %s
-                     \s
-                    """, a.getName(), a.getBirthYear(), a.getDeathYear(), authorBooks);
-        });
+    private void listBooksByLanguage() {
+        try {
+            System.out.println("""
+                    Digite o idioma que você gostaria de buscar
+                    \s
+                    en - Inglês
+                    es - Espanhol
+                    fr - Francês
+                    pt - Português
+                    it - Italiano
+                    de - Alemão
+                    """);
+
+            reader.nextLine();
+            String lang = reader.nextLine();
+            Language language = Language.fromString(lang);
+
+            List<Book> books = bookService.getBooksByLanguage(language);
+
+            if (books.isEmpty()) {
+                System.out.println("\nNenhum livro nesse idioma encontrado.\n");
+            } else {
+                System.out.printf("Quantidade de livros encontrados: %d\n", books.size());
+                books.forEach(System.out::println);
+            }
+        } catch (IllegalArgumentException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    private void listBookTop10() {
+        List<Book> books = bookService.getTop10();
+
+        System.out.println("Aqui está o top 10 livros mais baixados do LiterAlura:\n");
+        books.forEach(System.out::println);
     }
 }
