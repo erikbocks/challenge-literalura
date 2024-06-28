@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: bitnami/postgresql:latest
+    container_name: literalura-bock
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=docker
+      - DB_URL=localhost:5432/postgres
+      - DB_USERNAME=docker
+      - DB_PASSWORD=docker
+    volumes:
+      - pg_data:/bitnami/postgresql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  pg_data:
