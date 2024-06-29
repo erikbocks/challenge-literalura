@@ -45,4 +45,6 @@ Tecnologias necessárias: JDK 17 ou acima e Docker.
 
 3 - Digite ``docker compose up -d`` e isso subirá um novo container para o banco de dados em segundo plano.
 
-4 - Agora, execute o método main da classe LiteraluraApplication.
+4 - Agora é necessário configurar as variáveis de ambiente da IDE com o arquivo env.env.
+
+5 - Enfim, execute o método main da classe LiteraluraApplication.
